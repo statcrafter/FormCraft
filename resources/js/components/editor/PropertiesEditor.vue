@@ -4,15 +4,75 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Separator } from '@/components/ui/separator';
+import { Button } from '@/components/ui/button';
 import { computed } from 'vue';
+import { Plus, X, GripVertical } from 'lucide-vue-next';
+import draggable from 'vuedraggable';
+
+import { watch } from 'vue';
 
 const store = useFormEditorStore();
 
 const question = computed(() => store.selectedQuestion);
 
+// S'assurer que tous les choix ont un UUID stable dans le store
+watch(() => question.value?.id, () => {
+    if (question.value?.choices) {
+        const choices = question.value.choices;
+        const needsFix = choices.some(c => !c.uuid);
+        if (needsFix) {
+            const fixedChoices = choices.map(c => ({
+                ...c,
+                uuid: c.uuid || Math.random().toString(36).substring(7)
+            }));
+            store.updateQuestion(question.value.id, { choices: fixedChoices });
+        }
+    }
+}, { immediate: true });
+
 const update = (key: string, value: any) => {
     if (question.value) {
         store.updateQuestion(question.value.id, { [key]: value });
+    }
+};
+
+const addChoice = () => {
+    if (question.value && question.value.choices) {
+        const newChoices = [...question.value.choices];
+        const count = newChoices.length + 1;
+        newChoices.push({ 
+            uuid: Math.random().toString(36).substring(7),
+            name: `option_${count}`, 
+            label: `Option ${count}` 
+        });
+        update('choices', newChoices);
+    }
+};
+
+const removeChoice = (index: number) => {
+    if (question.value && question.value.choices) {
+        const newChoices = [...question.value.choices];
+        newChoices.splice(index, 1);
+        update('choices', newChoices);
+    }
+};
+
+const choicesList = computed({
+    get: () => question.value?.choices || [],
+    set: (newChoices) => {
+        if (question.value) {
+            store.updateQuestion(question.value.id, { choices: [...newChoices] });
+        }
+    }
+});
+
+const updateChoice = (index: number, field: 'name' | 'label', value: string) => {
+    if (question.value && question.value.choices) {
+        const newChoices = [...question.value.choices];
+        newChoices[index] = { ...newChoices[index], [field]: value };
+        // On met à jour le store, mais on ne déclenche pas forcément un re-render complet qui tue le focus
+        // Pinia est intelligent, mais vue-draggable est sensible.
+        store.updateQuestion(question.value.id, { choices: newChoices });
     }
 };
 </script>
@@ -55,6 +115,61 @@ const update = (key: string, value: any) => {
             </div>
 
             <Separator />
+
+            <!-- Section Choix pour Select -->
+            <div v-if="['select_one', 'select_multiple', 'rank'].includes(question.type)" class="space-y-4">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-sm font-medium">Options de réponse</h3>
+                    <Button v-if="question.choices" variant="ghost" size="sm" @click="addChoice" class="h-8 px-2">
+                        <Plus class="w-3 h-3 mr-1" /> Ajouter
+                    </Button>
+                </div>
+                
+                <div v-if="!question.choices" class="p-4 border border-dashed rounded-md text-center space-y-2">
+                    <p class="text-xs text-muted-foreground">Cette question n'a pas encore d'options.</p>
+                    <Button size="sm" variant="outline" @click="update('choices', [{uuid: Math.random().toString(36).substring(7), name: 'option_1', label: 'Option 1'}])">
+                        Initialiser les options
+                    </Button>
+                </div>
+
+                <draggable 
+                    v-else
+                    v-model="choicesList" 
+                    item-key="uuid"
+                    handle=".handle"
+                    class="space-y-2"
+                    :animation="200"
+                >
+                    <template #item="{ element, index }">
+                        <div class="flex items-start gap-2 p-2 bg-muted/30 rounded-md border group">
+                            <GripVertical class="handle w-4 h-4 mt-1.5 text-muted-foreground cursor-grab opacity-50 group-hover:opacity-100" />
+                            <div class="flex-1 space-y-1">
+                                <Input 
+                                    :model-value="element.label"
+                                    @update:model-value="v => updateChoice(index, 'label', v as string)"
+                                    class="h-7 text-sm" 
+                                    placeholder="Libellé" 
+                                />
+                                <Input 
+                                    :model-value="element.name"
+                                    @update:model-value="v => updateChoice(index, 'name', v as string)"
+                                    class="h-5 text-[10px] font-mono text-muted-foreground border-none bg-transparent px-0 focus-visible:ring-0" 
+                                    placeholder="valeur_interne" 
+                                />
+                            </div>
+                            <Button 
+                                variant="ghost" 
+                                size="icon" 
+                                class="h-6 w-6 text-muted-foreground hover:text-destructive opacity-50 group-hover:opacity-100"
+                                @click="removeChoice(index)"
+                            >
+                                <X class="w-3 h-3" />
+                            </Button>
+                        </div>
+                    </template>
+                </draggable>
+                <Separator />
+            </div>
 
             <div class="space-y-4">
                 <div class="flex items-center space-x-2">

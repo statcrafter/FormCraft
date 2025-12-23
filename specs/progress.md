@@ -47,14 +47,12 @@ Ce document sert à suivre l'état d'avancement du développement, les tâches a
 
 ---
 
-## 🔴 Phase 3 : Types de Questions - Partie 1 (Input Basiques)
-- [ ] Interface Drag-and-Drop (Éditeur visuel)
-- [ ] Composant : Text / Integer / Decimal
-- [ ] Composant : Select One / Select Multiple
+## 🟡 Phase 3 : Types de Questions - Partie 1 (Input Basiques)
+- [x] Interface Drag-and-Drop (Éditeur visuel avec Pinia + VueDraggable)
+- [x] Composant : Text / Integer / Decimal
+- [x] Composant : Select One / Select Multiple (avec éditeur d'options)
 - [ ] Composant : Rank
 - [ ] Gestion des choix (listes simples)
-
----
 
 ## 🔴 Phase 4 : Types de Questions - Partie 2 (Médias et Géo)
 - [ ] Composant : Image / Audio / Video / File

@@ -1,6 +1,12 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 
+export interface Choice {
+    uuid?: string;
+    name: string;
+    label: string;
+}
+
 export interface Question {
     id: string;
     type: string;
@@ -14,6 +20,7 @@ export interface Question {
     calculation?: string;
     appearance?: string;
     default?: any;
+    choices?: Choice[];
     properties: Record<string, any>;
 }
 
@@ -42,8 +49,15 @@ export const useFormEditorStore = defineStore('formEditor', () => {
             properties: {},
         };
 
+        if (['select_one', 'select_multiple', 'rank'].includes(type)) {
+            newQuestion.choices = [
+                { uuid: Math.random().toString(36).substring(7), name: 'option_1', label: 'Option 1' },
+                { uuid: Math.random().toString(36).substring(7), name: 'option_2', label: 'Option 2' },
+            ];
+        }
+
         if (typeof index === 'number') {
-            questions.value.splice(index, 1, newQuestion); // Si on remplace un placeholder
+            questions.value.splice(index, 1, newQuestion);
         } else {
             questions.value.push(newQuestion);
         }
