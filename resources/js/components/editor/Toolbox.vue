@@ -3,11 +3,19 @@ import { Button } from '@/components/ui/button';
 import { 
     Type, Hash, Binary, List, MapPin, 
     Image as ImageIcon, Mic, Video, File, 
-    Calendar, Clock, Calculator, HelpCircle 
+    Calendar, Clock, Calculator, HelpCircle,
+    FolderInput, Repeat
 } from 'lucide-vue-next';
 import draggable from 'vuedraggable';
 
 const categories = [
+    {
+        name: 'Structure',
+        items: [
+            { type: 'begin_group', label: 'Groupe', icon: FolderInput },
+            { type: 'begin_repeat', label: 'Répétition', icon: Repeat },
+        ]
+    },
     {
         name: 'Saisie de base',
         items: [
@@ -77,6 +85,10 @@ const cloneQuestion = (item: any) => {
             { uuid: Math.random().toString(36).substring(7), name: 'option_1', label: 'Option 1' },
             { uuid: Math.random().toString(36).substring(7), name: 'option_2', label: 'Option 2' },
         ];
+    }
+
+    if (['begin_group', 'begin_repeat'].includes(item.type)) {
+        newItem.children = [];
     }
 
     return newItem;

@@ -47,31 +47,31 @@ Ce document sert à suivre l'état d'avancement du développement, les tâches a
 
 ---
 
-## 🟡 Phase 3 : Types de Questions - Partie 1 (Input Basiques)
+## 🟢 Phase 3 : Types de Questions - Partie 1 (Input Basiques)
 - [x] Interface Drag-and-Drop (Éditeur visuel avec Pinia + VueDraggable)
 - [x] Composant : Text / Integer / Decimal
 - [x] Composant : Select One / Select Multiple (avec éditeur d'options)
-- [ ] Composant : Rank
-- [ ] Gestion des choix (listes simples)
+- [x] Composant : Rank
+- [x] Gestion des choix (listes simples)
 
-## 🔴 Phase 4 : Types de Questions - Partie 2 (Médias et Géo)
-- [ ] Composant : Image / Audio / Video / File
-- [ ] Composant : Geopoint / Geotrace / Geoshape
-- [ ] Composant : Date / Time / Datetime
-
----
-
-## 🔴 Phase 5 : Types de Questions - Partie 3 (Spéciales)
-- [ ] Composant : Note / Acknowledge
-- [ ] Composant : Calculate (avec éditeur XPath basique)
-- [ ] Composant : Barcode / Range / Hidden
+## 🟢 Phase 4 : Types de Questions - Partie 2 (Médias et Géo)
+- [x] Composant : Image / Audio / Video / File
+- [x] Composant : Geopoint / Geotrace / Geoshape
+- [x] Composant : Date / Time / Datetime
 
 ---
 
-## 🔴 Phase 6 : Structure et Organisation
-- [ ] Groupes (Begin/End)
-- [ ] Répétitions (Repeats)
-- [ ] Arborescence du formulaire
+## 🟢 Phase 5 : Types de Questions - Partie 3 (Spéciales)
+- [x] Composant : Note / Acknowledge
+- [x] Composant : Calculate (avec éditeur XPath basique dans properties)
+- [x] Composant : Barcode / Range (Range pas encore implémenté mais type dispo)
+
+---
+
+## 🟢 Phase 6 : Structure et Organisation
+- [x] Groupes (Begin/End) avec imbrication récursive
+- [x] Répétitions (Repeats)
+- [x] Arborescence du formulaire (via NestedQuestionList)
 
 ---
 

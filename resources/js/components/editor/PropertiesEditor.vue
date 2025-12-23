@@ -15,6 +15,17 @@ const store = useFormEditorStore();
 
 const question = computed(() => store.selectedQuestion);
 
+const nameError = computed(() => {
+    if (!question.value) return null;
+    if (store.isNameTaken(question.value.name, question.value.id)) {
+        return "Ce nom technique est déjà utilisé ailleurs.";
+    }
+    if (!/^[a-z][a-z0-9_]*$/.test(question.value.name)) {
+        return "Doit commencer par une lettre et ne contenir que minuscules, chiffres et _";
+    }
+    return null;
+});
+
 // S'assurer que tous les choix ont un UUID stable dans le store
 watch(() => question.value?.id, () => {
     if (question.value?.choices) {
@@ -95,13 +106,15 @@ const updateChoice = (index: number, field: 'name' | 'label', value: string) => 
                 </div>
 
                 <div class="space-y-2">
-                    <Label for="q-name">Nom technique (XLSForm name)</Label>
+                    <Label for="q-name" :class="nameError ? 'text-destructive' : ''">Nom technique (XLSForm name)</Label>
                     <Input 
                         id="q-name" 
                         :model-value="question.name" 
                         @update:model-value="v => update('name', v)"
+                        :class="nameError ? 'border-destructive' : ''"
                     />
-                    <p class="text-[10px] text-muted-foreground">Unique, sans espaces ni caractères spéciaux.</p>
+                    <p v-if="nameError" class="text-[10px] text-destructive">{{ nameError }}</p>
+                    <p v-else class="text-[10px] text-muted-foreground">Unique, sans espaces ni caractères spéciaux.</p>
                 </div>
 
                 <div class="space-y-2">
@@ -111,6 +124,22 @@ const updateChoice = (index: number, field: 'name' | 'label', value: string) => 
                         :model-value="question.hint" 
                         @update:model-value="v => update('hint', v)"
                     />
+                </div>
+            </div>
+
+            <!-- Configuration Répétition -->
+            <div v-if="question.type === 'begin_repeat'" class="space-y-4">
+                <Separator />
+                <h3 class="text-sm font-medium text-primary">Configuration Répétition</h3>
+                <div class="space-y-2">
+                    <Label for="q-repeat-count">Nombre de répétitions (Fixe ou Dynamique)</Label>
+                    <Input 
+                        id="q-repeat-count" 
+                        :model-value="question.properties.repeat_count" 
+                        @update:model-value="v => update('properties', { ...question.properties, repeat_count: v })"
+                        placeholder="ex: 5 ou ${nombre_enfants}"
+                    />
+                    <p class="text-[10px] text-muted-foreground">Laissez vide pour une répétition infinie contrôlée par l'utilisateur.</p>
                 </div>
             </div>
 
@@ -150,12 +179,20 @@ const updateChoice = (index: number, field: 'name' | 'label', value: string) => 
                                     class="h-7 text-sm" 
                                     placeholder="Libellé" 
                                 />
-                                <Input 
-                                    :model-value="element.name"
-                                    @update:model-value="v => updateChoice(index, 'name', v as string)"
-                                    class="h-5 text-[10px] font-mono text-muted-foreground border-none bg-transparent px-0 focus-visible:ring-0" 
-                                    placeholder="valeur_interne" 
-                                />
+                                <div class="flex gap-2">
+                                    <Input 
+                                        :model-value="element.name"
+                                        @update:model-value="v => updateChoice(index, 'name', v as string)"
+                                        class="h-5 text-[10px] font-mono text-muted-foreground border-none bg-transparent px-0 focus-visible:ring-0" 
+                                        placeholder="valeur_interne" 
+                                    />
+                                    <Input 
+                                        :model-value="(element as any).filter_value"
+                                        @update:model-value="v => updateChoice(index, 'filter_value' as any, v as string)"
+                                        class="h-5 text-[10px] font-mono text-primary/70 border-none bg-transparent px-0 focus-visible:ring-0 text-right" 
+                                        placeholder="attribut_filtre" 
+                                    />
+                                </div>
                             </div>
                             <Button 
                                 variant="ghost" 
@@ -168,6 +205,16 @@ const updateChoice = (index: number, field: 'name' | 'label', value: string) => 
                         </div>
                     </template>
                 </draggable>
+
+                <div v-if="question.choices" class="space-y-2 pt-2">
+                    <Label class="text-[11px] text-muted-foreground">Filtre de choix (Choice Filter)</Label>
+                    <Input 
+                        :model-value="question.properties.choice_filter" 
+                        @update:model-value="v => update('properties', { ...question.properties, choice_filter: v })"
+                        placeholder="ex: province = ${ma_province}"
+                        class="h-8 text-xs"
+                    />
+                </div>
                 <Separator />
             </div>
 

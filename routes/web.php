@@ -17,6 +17,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     })->name('dashboard');
 
     Route::resource('forms', FormController::class);
+    Route::get('forms/{form}/download', [FormController::class, 'download'])->name('forms.download');
 });
 
 require __DIR__.'/settings.php';

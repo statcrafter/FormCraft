@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, Save } from 'lucide-vue-next';
+import { ChevronLeft, Save, Download } from 'lucide-vue-next';
 import { onMounted } from 'vue';
 import { useFormEditorStore } from '@/stores/formEditor';
 import Toolbox from '@/components/editor/Toolbox.vue';
@@ -32,6 +32,10 @@ const saveForm = () => {
         preserveScroll: true,
     });
 };
+
+const downloadXls = () => {
+    window.location.href = `/forms/${props.form.id}/download`;
+};
 </script>
 
 <template>
@@ -52,6 +56,11 @@ const saveForm = () => {
             </div>
 
             <div class="flex items-center gap-2">
+                <Button variant="outline" size="sm" @click="downloadXls">
+                    <Download class="w-4 h-4 mr-2" />
+                    Exporter XLSForm
+                </Button>
+                <div class="h-4 w-px bg-border mx-1"></div>
                 <Button variant="outline" size="sm" @click="saveForm" :disabled="inertiaForm.processing">
                     <Save class="w-4 h-4 mr-2" />
                     {{ inertiaForm.processing ? 'Enregistrement...' : 'Sauvegarder' }}

@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreFormRequest;
 use App\Http\Requests\UpdateFormRequest;
 use App\Models\Form;
+use App\Exports\XlsFormExport;
+use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Illuminate\Support\Str;
@@ -73,5 +75,14 @@ class FormController extends Controller
         $form->delete();
 
         return redirect()->route('forms.index')->with('success', 'Formulaire supprimé');
+    }
+
+    public function download(Form $form)
+    {
+        Gate::authorize('view', $form);
+
+        $filename = Str::slug($form->title) . '.xlsx';
+
+        return Excel::download(new XlsFormExport($form), $filename);
     }
 }

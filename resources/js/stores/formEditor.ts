@@ -21,6 +21,7 @@ export interface Question {
     appearance?: string;
     default?: any;
     choices?: Choice[];
+    children?: Question[];
     properties: Record<string, any>;
 }
 
@@ -30,20 +31,75 @@ export const useFormEditorStore = defineStore('formEditor', () => {
     const formTitle = ref('');
     const formId = ref('');
 
-    const selectedQuestion = computed(() => 
-        questions.value.find(q => q.id === selectedQuestionId.value) || null
-    );
+    // Recherche récursive d'une question par ID
+    function findQuestionById(list: Question[], id: string): Question | null {
+        for (const q of list) {
+            if (q.id === id) return q;
+            if (q.children) {
+                const found = findQuestionById(q.children, id);
+                if (found) return found;
+            }
+        }
+        return null;
+    }
+
+    const selectedQuestion = computed(() => {
+        if (!selectedQuestionId.value) return null;
+        return findQuestionById(questions.value, selectedQuestionId.value);
+    });
 
     function setQuestions(newQuestions: Question[]) {
         questions.value = newQuestions;
     }
 
-    function addQuestion(type: string, index?: number) {
+    // Récupérer tous les noms utilisés récursivement
+    function getAllNames(list: Question[]): string[] {
+        let names: string[] = [];
+        for (const q of list) {
+            names.push(q.name);
+            if (q.children) {
+                names = [...names, ...getAllNames(q.children)];
+            }
+        }
+        return names;
+    }
+
+    // Générer un nom unique
+    function getUniqueName(baseName: string): string {
+        const allNames = getAllNames(questions.value);
+        let name = baseName;
+        let counter = 1;
+        while (allNames.includes(name)) {
+            name = `${baseName}_${counter}`;
+            counter++;
+        }
+        return name;
+    }
+
+    // Vérifier si un nom existe déjà (pour la validation manuelle)
+    function isNameTaken(name: string, excludeId: string): boolean {
+        function check(list: Question[]): boolean {
+            for (const q of list) {
+                if (q.name === name && q.id !== excludeId) return true;
+                if (q.children) {
+                    if (check(q.children)) return true;
+                }
+            }
+            return false;
+        }
+        return check(questions.value);
+    }
+
+    function addQuestion(type: string, parentId?: string) {
         const uid = Math.random().toString(36).substring(7);
+        const baseName = `${type.replace(/[^a-z0-9]/gi, '_')}`;
+        // Assurer l'unicité du nom dès la création
+        const uniqueName = getUniqueName(`${baseName}_${uid}`);
+
         const newQuestion: Question = {
             id: uid,
             type,
-            name: `${type.replace(/[^a-z0-9]/gi, '_')}_${uid}`,
+            name: uniqueName,
             label: `Nouvelle question (${type})`,
             required: false,
             properties: {},
@@ -56,8 +112,15 @@ export const useFormEditorStore = defineStore('formEditor', () => {
             ];
         }
 
-        if (typeof index === 'number') {
-            questions.value.splice(index, 1, newQuestion);
+        if (['begin_group', 'begin_repeat'].includes(type)) {
+            newQuestion.children = [];
+        }
+
+        if (parentId) {
+            const parent = findQuestionById(questions.value, parentId);
+            if (parent && parent.children) {
+                parent.children.push(newQuestion);
+            }
         } else {
             questions.value.push(newQuestion);
         }
@@ -65,13 +128,24 @@ export const useFormEditorStore = defineStore('formEditor', () => {
         selectedQuestionId.value = uid;
     }
 
-    function removeQuestion(id: string) {
-        const index = questions.value.findIndex(q => q.id === id);
+    function removeQuestionRecursive(list: Question[], id: string): boolean {
+        const index = list.findIndex(q => q.id === id);
         if (index !== -1) {
-            questions.value.splice(index, 1);
-            if (selectedQuestionId.value === id) {
-                selectedQuestionId.value = null;
+            list.splice(index, 1);
+            return true;
+        }
+        for (const q of list) {
+            if (q.children) {
+                if (removeQuestionRecursive(q.children, id)) return true;
             }
+        }
+        return false;
+    }
+
+    function removeQuestion(id: string) {
+        removeQuestionRecursive(questions.value, id);
+        if (selectedQuestionId.value === id) {
+            selectedQuestionId.value = null;
         }
     }
 
@@ -80,9 +154,9 @@ export const useFormEditorStore = defineStore('formEditor', () => {
     }
 
     function updateQuestion(id: string, updates: Partial<Question>) {
-        const index = questions.value.findIndex(q => q.id === id);
-        if (index !== -1) {
-            questions.value[index] = { ...questions.value[index], ...updates };
+        const question = findQuestionById(questions.value, id);
+        if (question) {
+            Object.assign(question, updates);
         }
     }
 
@@ -96,6 +170,7 @@ export const useFormEditorStore = defineStore('formEditor', () => {
         addQuestion, 
         removeQuestion, 
         selectQuestion,
-        updateQuestion 
+        updateQuestion,
+        isNameTaken
     };
 });

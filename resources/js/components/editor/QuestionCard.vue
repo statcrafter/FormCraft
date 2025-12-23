@@ -5,7 +5,8 @@ import {
     Trash2, GripVertical, Settings2, 
     Type, Hash, Binary, List, MapPin, 
     Image as ImageIcon, Mic, Video, File, 
-    Calendar, Clock, Calculator, HelpCircle 
+    Calendar, Clock, Calculator, HelpCircle,
+    FolderInput, Repeat
 } from 'lucide-vue-next';
 import { cn } from '@/lib/utils';
 
@@ -40,6 +41,8 @@ const typeIcons: Record<string, any> = {
     note: HelpCircle,
     barcode: ImageIcon,
     acknowledge: HelpCircle,
+    begin_group: FolderInput,
+    begin_repeat: Repeat,
 };
 
 const currentIcon = computed(() => typeIcons[props.question.type] || HelpCircle);
