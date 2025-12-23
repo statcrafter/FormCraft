@@ -26,12 +26,15 @@ class XlsFormExport implements WithMultipleSheets
         return [
             new GenericSheet('survey', $this->getSurveyHeadings(), $this->surveyRows),
             new GenericSheet('choices', ['list_name', 'name', 'label'], $this->choicesRows),
-            new GenericSheet('settings', ['form_title', 'form_id', 'version', 'default_language'], [
+            new GenericSheet('settings', ['form_title', 'form_id', 'version', 'default_language', 'style', 'submission_url', 'instance_name'], [
                 [
                     $this->form->settings['form_title'] ?? $this->form->title,
                     $this->form->form_id,
                     $this->form->version,
                     $this->form->settings['default_language'] ?? 'French (fr)',
+                    $this->form->settings['style'] ?? 'pages',
+                    $this->form->settings['submission_url'] ?? '',
+                    $this->form->settings['instance_name'] ?? '',
                 ]
             ]),
         ];

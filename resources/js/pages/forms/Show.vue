@@ -17,18 +17,29 @@ const store = useFormEditorStore();
 onMounted(() => {
     store.formTitle = props.form.title;
     store.formId = props.form.form_id;
+    store.formVersion = props.form.version || '1';
+    if (props.form.settings) {
+        store.globalSettings = { ...store.globalSettings, ...props.form.settings };
+    }
     store.setQuestions(props.form.definition || []);
     store.setAssets(props.form.assets || []);
 });
 
 const inertiaForm = useForm({
     title: '',
+    form_id: '',
+    version: '',
     definition: [] as any[],
+    settings: {} as any,
 });
 
 const saveForm = () => {
     inertiaForm.title = store.formTitle;
+    inertiaForm.form_id = store.formId;
+    inertiaForm.version = store.formVersion;
     inertiaForm.definition = store.questions;
+    inertiaForm.settings = store.globalSettings;
+    
     inertiaForm.put(`/forms/${props.form.id}`, {
         preserveScroll: true,
     });

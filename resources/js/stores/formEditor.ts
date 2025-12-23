@@ -42,6 +42,14 @@ export const useFormEditorStore = defineStore('formEditor', () => {
     const selectedQuestionId = ref<string | null>(null);
     const formTitle = ref('');
     const formId = ref('');
+    const formVersion = ref('1');
+    const globalSettings = ref({
+        submission_url: '',
+        instance_name: '',
+        style: 'pages',
+        default_language: 'French (fr)',
+        allow_choice_duplicates: 'yes',
+    });
 
     // Recherche récursive d'une question par ID
     function findQuestionById(list: Question[], id: string): Question | null {
@@ -196,6 +204,8 @@ export const useFormEditorStore = defineStore('formEditor', () => {
         selectedQuestion,
         formTitle,
         formId,
+        formVersion,
+        globalSettings,
         setQuestions,
         setAssets,
         addQuestion, 

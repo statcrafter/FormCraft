@@ -23,6 +23,8 @@ class UpdateFormRequest extends FormRequest
     {
         return [
             'title' => ['required', 'string', 'max:255'],
+            'form_id' => ['required', 'string', 'max:255', 'unique:forms,form_id,' . $this->route('form')->id],
+            'version' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'definition' => ['nullable', 'array'],
             'settings' => ['nullable', 'array'],
