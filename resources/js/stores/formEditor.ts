@@ -192,6 +192,18 @@ export const useFormEditorStore = defineStore('formEditor', () => {
     function updateQuestion(id: string, updates: Partial<Question>) {
         const question = findQuestionById(questions.value, id);
         if (question) {
+            // Si on met à jour le label et que le nom semble être généré par défaut, on le synchronise
+            if (updates.label && (question.name.startsWith(question.type + '_') || !question.name)) {
+                const slug = updates.label.toString().toLowerCase()
+                    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+                    .replace(/\s+/g, '_')
+                    .replace(/[^\w-]+/g, '')
+                    .slice(0, 30);
+                
+                if (slug.length > 2) {
+                    updates.name = getUniqueName(slug);
+                }
+            }
             Object.assign(question, updates);
         }
     }

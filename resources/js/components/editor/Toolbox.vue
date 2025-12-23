@@ -10,60 +10,60 @@ import draggable from 'vuedraggable';
 
 const categories = [
     {
-        name: 'Structure',
+        name: 'Organisation',
         items: [
-            { type: 'begin_group', label: 'Groupe', icon: FolderInput },
-            { type: 'begin_repeat', label: 'Répétition', icon: Repeat },
+            { type: 'begin_group', label: 'Groupe de questions', icon: FolderInput },
+            { type: 'begin_repeat', label: 'Liste répétitive', icon: Repeat },
         ]
     },
     {
-        name: 'Saisie de base',
+        name: 'Questions simples',
         items: [
-            { type: 'text', label: 'Texte', icon: Type },
-            { type: 'integer', label: 'Entier', icon: Hash },
-            { type: 'decimal', label: 'Décimal', icon: Binary },
-            { type: 'note', label: 'Note', icon: HelpCircle },
+            { type: 'text', label: 'Texte court', icon: Type },
+            { type: 'integer', label: 'Nombre entier', icon: Hash },
+            { type: 'decimal', label: 'Nombre décimal', icon: Binary },
+            { type: 'note', label: 'Message / Note', icon: HelpCircle },
         ]
     },
     {
-        name: 'Sélections',
+        name: 'Choix et listes',
         items: [
             { type: 'select_one', label: 'Choix unique', icon: List },
             { type: 'select_multiple', label: 'Choix multiples', icon: List },
-            { type: 'rank', label: 'Classement (Rank)', icon: List },
+            { type: 'rank', label: 'Classement', icon: List },
         ]
     },
     {
-        name: 'Dates & Heures',
+        name: 'Dates et heures',
         items: [
             { type: 'date', label: 'Date', icon: Calendar },
             { type: 'time', label: 'Heure', icon: Clock },
-            { type: 'datetime', label: 'Date & Heure', icon: Calendar },
+            { type: 'datetime', label: 'Date et Heure', icon: Calendar },
         ]
     },
     {
-        name: 'Multimédia',
+        name: 'Photos et Médias',
         items: [
-            { type: 'image', label: 'Image', icon: ImageIcon },
-            { type: 'audio', label: 'Audio', icon: Mic },
-            { type: 'video', label: 'Vidéo', icon: Video },
-            { type: 'file', label: 'Fichier', icon: File },
+            { type: 'image', label: 'Prendre une photo', icon: ImageIcon },
+            { type: 'audio', label: 'Enregistrement audio', icon: Mic },
+            { type: 'video', label: 'Enregistrement vidéo', icon: Video },
+            { type: 'file', label: 'Fichier / Document', icon: File },
         ]
     },
     {
-        name: 'Géographie',
+        name: 'Localisation GPS',
         items: [
             { type: 'geopoint', label: 'Point GPS', icon: MapPin },
-            { type: 'geotrace', label: 'Tracé (Ligne)', icon: MapPin },
-            { type: 'geoshape', label: 'Zone (Polygone)', icon: MapPin },
+            { type: 'geotrace', label: 'Tracé GPS', icon: MapPin },
+            { type: 'geoshape', label: 'Surface GPS', icon: MapPin },
         ]
     },
     {
-        name: 'Avancé',
+        name: 'Outils spéciaux',
         items: [
-            { type: 'calculate', label: 'Calcul', icon: Calculator },
-            { type: 'barcode', label: 'Code-barres / QR', icon: ImageIcon },
-            { type: 'acknowledge', label: 'Confirmation', icon: HelpCircle },
+            { type: 'calculate', label: 'Calcul invisible', icon: Calculator },
+            { type: 'barcode', label: 'Scan Code-barres', icon: ImageIcon },
+            { type: 'acknowledge', label: 'Confirmation (OK)', icon: HelpCircle },
         ]
     }
 ];
