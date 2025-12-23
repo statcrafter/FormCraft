@@ -17,6 +17,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     })->name('dashboard');
 
     Route::resource('forms', FormController::class);
+    Route::post('forms/import', [FormController::class, 'import'])->name('forms.import');
     Route::get('forms/{form}/download', [FormController::class, 'download'])->name('forms.download');
     Route::post('forms/{form}/assets', [FormController::class, 'uploadAsset'])->name('forms.assets.upload');
     Route::delete('forms/{form}/assets/{asset}', [FormController::class, 'deleteAsset'])->name('forms.assets.delete');

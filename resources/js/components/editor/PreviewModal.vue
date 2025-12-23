@@ -5,7 +5,6 @@ import { ref, computed, watch } from 'vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Smartphone, Tablet, Monitor, Send } from 'lucide-vue-next';
 
@@ -18,7 +17,7 @@ const previewMode = ref('mobile'); // smartphone, tablet, desktop
 
 // Reset data when opening
 watch(() => props.open, (isOpen) => {
-    if (open) formData.value = {};
+    if (isOpen) formData.value = {};
 });
 
 const evalRule = (rule: any) => {
@@ -103,7 +102,6 @@ const getVisibleQuestions = (list: Question[]): Question[] => {
                                 <p v-if="q.hint" class="text-xs text-muted-foreground italic">{{ q.hint }}</p>
                             </div>
 
-                            <!-- Input Rendering based on type -->
                             <div class="pt-1">
                                 <!-- Text / Integer / Decimal -->
                                 <Input 
@@ -113,13 +111,20 @@ const getVisibleQuestions = (list: Question[]): Question[] => {
                                     :placeholder="q.type === 'text' ? 'Votre réponse...' : '0'"
                                 />
 
-                                <!-- Select One -->
-                                <RadioGroup v-if="q.type === 'select_one'" v-model="formData[q.name]" class="space-y-2">
+                                <!-- Select One (Native Radio Implementation) -->
+                                <div v-if="q.type === 'select_one'" class="space-y-2">
                                     <div v-for="opt in q.choices" :key="opt.uuid" class="flex items-center space-x-2 border p-3 rounded-md hover:bg-muted/50 transition-colors">
-                                        <RadioGroupItem :value="opt.name" :id="opt.uuid" />
+                                        <input 
+                                            type="radio" 
+                                            :name="q.name" 
+                                            :value="opt.name" 
+                                            :id="opt.uuid"
+                                            v-model="formData[q.name]"
+                                            class="h-4 w-4 text-primary border-gray-300 focus:ring-primary"
+                                        />
                                         <Label :for="opt.uuid" class="flex-1 cursor-pointer">{{ opt.label }}</Label>
                                     </div>
-                                </RadioGroup>
+                                </div>
 
                                 <!-- Select Multiple -->
                                 <div v-if="q.type === 'select_multiple'" class="space-y-2">
@@ -146,7 +151,7 @@ const getVisibleQuestions = (list: Question[]): Question[] => {
                                 <Input 
                                     v-if="['date', 'time', 'datetime'].includes(q.type)"
                                     v-model="formData[q.name]"
-                                    :type="q.type"
+                                    :type="q.type === 'datetime' ? 'datetime-local' : q.type"
                                 />
                             </div>
                         </div>

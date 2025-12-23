@@ -5,9 +5,14 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreFormRequest;
 use App\Http\Requests\UpdateFormRequest;
 use App\Models\Form;
+use App\Models\FormAsset;
 use App\Exports\XlsFormExport;
+use App\Imports\XlsFormImport;
+use App\Services\XlsFormImporter;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Str;
 
@@ -48,7 +53,7 @@ class FormController extends Controller
         Gate::authorize('view', $form);
 
         return Inertia::render('forms/Show', [
-            'form' => $form,
+            'form' => $form->load('assets'),
         ]);
     }
 
@@ -86,7 +91,29 @@ class FormController extends Controller
         return Excel::download(new XlsFormExport($form), $filename);
     }
 
-    public function uploadAsset(\Illuminate\Http\Request $request, Form $form)
+    public function import(Request $request, XlsFormImporter $importer)
+    {
+        $request->validate([
+            'file' => 'required|file|mimes:xlsx,xls',
+        ]);
+
+        $import = new XlsFormImport();
+        Excel::import($import, $request->file('file'));
+
+        $formData = $importer->import($import->sheets);
+
+        $form = auth()->user()->forms()->create([
+            'title' => $formData['title'],
+            'form_id' => $formData['form_id'],
+            'version' => $formData['version'],
+            'definition' => $formData['definition'],
+            'settings' => $formData['settings'],
+        ]);
+
+        return redirect()->route('forms.show', $form)->with('success', 'Formulaire importé avec succès');
+    }
+
+    public function uploadAsset(Request $request, Form $form)
     {
         Gate::authorize('update', $form);
 
@@ -109,7 +136,7 @@ class FormController extends Controller
         return back()->with('success', 'Fichier ajouté');
     }
 
-    public function deleteAsset(Form $form, \App\Models\FormAsset $asset)
+    public function deleteAsset(Form $form, FormAsset $asset)
     {
         Gate::authorize('update', $form);
 
@@ -117,7 +144,7 @@ class FormController extends Controller
             abort(403);
         }
 
-        \Illuminate\Support\Facades\Storage::disk('public')->delete($asset->path);
+        Storage::disk('public')->delete($asset->path);
         $asset->delete();
 
         return back()->with('success', 'Fichier supprimé');
