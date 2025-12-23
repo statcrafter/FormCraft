@@ -18,6 +18,7 @@ onMounted(() => {
     store.formTitle = props.form.title;
     store.formId = props.form.form_id;
     store.setQuestions(props.form.definition || []);
+    store.setAssets(props.form.assets || []);
 });
 
 const inertiaForm = useForm({
@@ -75,14 +76,12 @@ const downloadXls = () => {
         <div class="flex-1 flex overflow-hidden">
             <Toolbox />
             <Canvas />
-            <PropertiesEditor />
+            <PropertiesEditor :form="form" />
         </div>
     </div>
 </template>
 
 <style>
-/* Masquer la sidebar du layout global si nécessaire, 
-mais ici on ne l'utilise pas donc c'est ok. */
 body {
     overflow: hidden;
 }

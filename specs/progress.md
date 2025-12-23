@@ -75,8 +75,23 @@ Ce document sert à suivre l'état d'avancement du développement, les tâches a
 
 ---
 
-## 🔴 Phase 7 à 28 (Voir `specs/doc.md` pour détails)
-*À planifier une fois les phases 1-6 complétées.*
+## 🟢 Phase 7 : Logique et Conditions
+- [x] Relevant (Visibilité conditionnelle) via LogicBuilder visuel
+- [x] Constraint (Validation) via champ XPath
+- [x] Required (Obligatoire)
+- [x] Génération automatique de XPath pour les règles visuelles
+
+## 🟢 Phase 10 : Médias et Assets
+- [x] Infrastructure backend (Table `form_assets`)
+- [x] Upload d'images et audios par question
+- [x] Bibliothèque de médias par formulaire
+- [ ] Optimisation/Compression des images (à venir)
+
+## 🟢 Phase 13 : Export et Génération
+- [x] Export XLSForm (.xlsx) via Maatwebsite Excel
+- [x] Génération des feuilles `survey`, `choices` et `settings`
+- [x] Support des groupes et répétitions dans l'export
+- [ ] Export XML natif (ODK)
 
 ---
 

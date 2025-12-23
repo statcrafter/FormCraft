@@ -65,8 +65,13 @@ class XlsFormExport implements WithMultipleSheets
                 ($q['required'] ?? false) ? 'yes' : 'no',
                 $q['relevant'] ?? '',
                 $q['constraint'] ?? '',
+                $q['constraint_message'] ?? '',
                 $q['calculation'] ?? '',
                 $q['properties']['repeat_count'] ?? '',
+                $q['properties']['choice_filter'] ?? '',
+                $q['media_image'] ?? '',
+                $q['media_audio'] ?? '',
+                $q['media_video'] ?? '',
             ];
 
             // Si c'est un groupe ou une répétition, on traite les enfants et on ferme
@@ -74,24 +79,30 @@ class XlsFormExport implements WithMultipleSheets
                 $this->processQuestions($q['children']);
                 
                 $endType = str_replace('begin_', 'end_', $q['type']);
-                $this->surveyRows[] = [
-                    $endType,
-                    '',
-                    '',
-                    '',
-                    '',
-                    '',
-                    '',
-                    '',
-                    ''
-                ];
+                $this->surveyRows[] = array_fill(0, count($this->getSurveyHeadings()), '');
+                $this->surveyRows[count($this->surveyRows)-1][0] = $endType;
             }
         }
     }
 
     protected function getSurveyHeadings(): array
     {
-        return ['type', 'name', 'label', 'hint', 'required', 'relevant', 'constraint', 'calculation', 'repeat_count'];
+        return [
+            'type', 
+            'name', 
+            'label', 
+            'hint', 
+            'required', 
+            'relevant', 
+            'constraint', 
+            'constraint_message', 
+            'calculation', 
+            'repeat_count', 
+            'choice_filter',
+            'media::image',
+            'media::audio',
+            'media::video'
+        ];
     }
 }
 

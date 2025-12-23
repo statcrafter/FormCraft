@@ -31,4 +31,9 @@ class Form extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function assets(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(FormAsset::class);
+    }
 }

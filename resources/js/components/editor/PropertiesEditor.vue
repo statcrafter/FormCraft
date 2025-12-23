@@ -9,6 +9,11 @@ import { computed, watch } from 'vue';
 import { Plus, X, GripVertical, Info } from 'lucide-vue-next';
 import draggable from 'vuedraggable';
 import LogicBuilder from './LogicBuilder.vue';
+import MediaPicker from './MediaPicker.vue';
+
+const props = defineProps<{
+    form: any;
+}>();
 
 const store = useFormEditorStore();
 
@@ -139,6 +144,34 @@ const updateChoice = (index: number, field: string, value: string) => {
                         placeholder="ex: 5 ou ${nombre_enfants}"
                     />
                     <p class="text-[10px] text-muted-foreground">Laissez vide pour une répétition infinie.</p>
+                </div>
+                <Separator />
+            </div>
+
+            <!-- Section Médias -->
+            <div class="space-y-4">
+                <h3 class="text-sm font-medium">Médias d'illustration</h3>
+                
+                <div class="space-y-3">
+                    <div class="space-y-1">
+                        <Label class="text-[10px] text-muted-foreground uppercase">Image</Label>
+                        <MediaPicker 
+                            :model-value="question.media_image" 
+                            @update:model-value="v => update('media_image', v)"
+                            type="image" 
+                            :form-id="props.form.id"
+                        />
+                    </div>
+                    
+                    <div class="space-y-1">
+                        <Label class="text-[10px] text-muted-foreground uppercase">Audio</Label>
+                        <MediaPicker 
+                            :model-value="question.media_audio" 
+                            @update:model-value="v => update('media_audio', v)"
+                            type="audio" 
+                            :form-id="props.form.id"
+                        />
+                    </div>
                 </div>
                 <Separator />
             </div>

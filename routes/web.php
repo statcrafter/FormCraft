@@ -18,6 +18,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::resource('forms', FormController::class);
     Route::get('forms/{form}/download', [FormController::class, 'download'])->name('forms.download');
+    Route::post('forms/{form}/assets', [FormController::class, 'uploadAsset'])->name('forms.assets.upload');
+    Route::delete('forms/{form}/assets/{asset}', [FormController::class, 'deleteAsset'])->name('forms.assets.delete');
 });
 
 require __DIR__.'/settings.php';

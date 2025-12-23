@@ -85,4 +85,41 @@ class FormController extends Controller
 
         return Excel::download(new XlsFormExport($form), $filename);
     }
+
+    public function uploadAsset(\Illuminate\Http\Request $request, Form $form)
+    {
+        Gate::authorize('update', $form);
+
+        $request->validate([
+            'file' => 'required|file|max:10240',
+            'type' => 'required|string|in:image,audio,video,file',
+        ]);
+
+        $file = $request->file('file');
+        $path = $file->store("forms/{$form->id}", 'public');
+
+        $form->assets()->create([
+            'type' => $request->type,
+            'filename' => $file->getClientOriginalName(),
+            'path' => $path,
+            'mime_type' => $file->getMimeType(),
+            'size' => $file->getSize(),
+        ]);
+
+        return back()->with('success', 'Fichier ajouté');
+    }
+
+    public function deleteAsset(Form $form, \App\Models\FormAsset $asset)
+    {
+        Gate::authorize('update', $form);
+
+        if ($asset->form_id !== $form->id) {
+            abort(403);
+        }
+
+        \Illuminate\Support\Facades\Storage::disk('public')->delete($asset->path);
+        $asset->delete();
+
+        return back()->with('success', 'Fichier supprimé');
+    }
 }

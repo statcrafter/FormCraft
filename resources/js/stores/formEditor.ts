@@ -7,12 +7,23 @@ export interface Choice {
     label: string;
 }
 
+export interface Asset {
+    id: number;
+    type: string;
+    filename: string;
+    path: string;
+    mime_type: string;
+}
+
 export interface Question {
     id: string;
     type: string;
     name: string;
     label: string;
     hint?: string;
+    media_image?: string;
+    media_audio?: string;
+    media_video?: string;
     required: boolean;
     relevant?: string;
     constraint?: string;
@@ -27,6 +38,7 @@ export interface Question {
 
 export const useFormEditorStore = defineStore('formEditor', () => {
     const questions = ref<Question[]>([]);
+    const assets = ref<Asset[]>([]);
     const selectedQuestionId = ref<string | null>(null);
     const formTitle = ref('');
     const formId = ref('');
@@ -65,6 +77,10 @@ export const useFormEditorStore = defineStore('formEditor', () => {
         questions.value = newQuestions;
     }
 
+    function setAssets(newAssets: Asset[]) {
+        assets.value = newAssets;
+    }
+
     // Récupérer tous les noms utilisés récursivement
     function getAllNames(list: Question[]): string[] {
         let names: string[] = [];
@@ -89,7 +105,7 @@ export const useFormEditorStore = defineStore('formEditor', () => {
         return name;
     }
 
-    // Vérifier si un nom existe déjà (pour la validation manuelle)
+    // Vérifier si un nom existe déjà
     function isNameTaken(name: string, excludeId: string): boolean {
         function check(list: Question[]): boolean {
             for (const q of list) {
@@ -106,7 +122,6 @@ export const useFormEditorStore = defineStore('formEditor', () => {
     function addQuestion(type: string, parentId?: string) {
         const uid = Math.random().toString(36).substring(7);
         const baseName = `${type.replace(/[^a-z0-9]/gi, '_')}`;
-        // Assurer l'unicité du nom dès la création
         const uniqueName = getUniqueName(`${baseName}_${uid}`);
 
         const newQuestion: Question = {
@@ -175,12 +190,14 @@ export const useFormEditorStore = defineStore('formEditor', () => {
 
     return { 
         questions, 
+        assets,
         allQuestions,
         selectedQuestionId, 
         selectedQuestion,
         formTitle,
         formId,
         setQuestions,
+        setAssets,
         addQuestion, 
         removeQuestion, 
         selectQuestion,
