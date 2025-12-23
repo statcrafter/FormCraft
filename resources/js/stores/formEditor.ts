@@ -48,6 +48,19 @@ export const useFormEditorStore = defineStore('formEditor', () => {
         return findQuestionById(questions.value, selectedQuestionId.value);
     });
 
+    // Liste plate de toutes les questions pour les dropdowns de logique
+    const allQuestions = computed(() => {
+        const flat: Question[] = [];
+        const flatten = (list: Question[]) => {
+            for (const q of list) {
+                flat.push(q);
+                if (q.children) flatten(q.children);
+            }
+        };
+        flatten(questions.value);
+        return flat;
+    });
+
     function setQuestions(newQuestions: Question[]) {
         questions.value = newQuestions;
     }
@@ -162,6 +175,7 @@ export const useFormEditorStore = defineStore('formEditor', () => {
 
     return { 
         questions, 
+        allQuestions,
         selectedQuestionId, 
         selectedQuestion,
         formTitle,

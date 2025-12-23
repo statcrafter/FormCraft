@@ -5,11 +5,10 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
-import { computed } from 'vue';
-import { Plus, X, GripVertical } from 'lucide-vue-next';
+import { computed, watch } from 'vue';
+import { Plus, X, GripVertical, Info } from 'lucide-vue-next';
 import draggable from 'vuedraggable';
-
-import { watch } from 'vue';
+import LogicBuilder from './LogicBuilder.vue';
 
 const store = useFormEditorStore();
 
@@ -21,7 +20,7 @@ const nameError = computed(() => {
         return "Ce nom technique est déjà utilisé ailleurs.";
     }
     if (!/^[a-z][a-z0-9_]*$/.test(question.value.name)) {
-        return "Doit commencer par une lettre et ne contenir que minuscules, chiffres et _";
+        return "Doit commencer par une lettre minuscule et ne contenir que minuscules, chiffres et _";
     }
     return null;
 });
@@ -77,12 +76,10 @@ const choicesList = computed({
     }
 });
 
-const updateChoice = (index: number, field: 'name' | 'label', value: string) => {
+const updateChoice = (index: number, field: string, value: string) => {
     if (question.value && question.value.choices) {
         const newChoices = [...question.value.choices];
         newChoices[index] = { ...newChoices[index], [field]: value };
-        // On met à jour le store, mais on ne déclenche pas forcément un re-render complet qui tue le focus
-        // Pinia est intelligent, mais vue-draggable est sensible.
         store.updateQuestion(question.value.id, { choices: newChoices });
     }
 };
@@ -94,7 +91,8 @@ const updateChoice = (index: number, field: 'name' | 'label', value: string) => 
             <h2 class="font-semibold text-sm uppercase tracking-wider text-muted-foreground">Propriétés</h2>
         </div>
 
-        <div v-if="question" class="p-4 space-y-6">
+        <div v-if="question" class="p-4 space-y-6 pb-20">
+            <!-- Informations de base -->
             <div class="space-y-4">
                 <div class="space-y-2">
                     <Label for="q-label">Label (Texte de la question)</Label>
@@ -127,9 +125,10 @@ const updateChoice = (index: number, field: 'name' | 'label', value: string) => 
                 </div>
             </div>
 
+            <Separator />
+
             <!-- Configuration Répétition -->
             <div v-if="question.type === 'begin_repeat'" class="space-y-4">
-                <Separator />
                 <h3 class="text-sm font-medium text-primary">Configuration Répétition</h3>
                 <div class="space-y-2">
                     <Label for="q-repeat-count">Nombre de répétitions (Fixe ou Dynamique)</Label>
@@ -139,11 +138,10 @@ const updateChoice = (index: number, field: 'name' | 'label', value: string) => 
                         @update:model-value="v => update('properties', { ...question.properties, repeat_count: v })"
                         placeholder="ex: 5 ou ${nombre_enfants}"
                     />
-                    <p class="text-[10px] text-muted-foreground">Laissez vide pour une répétition infinie contrôlée par l'utilisateur.</p>
+                    <p class="text-[10px] text-muted-foreground">Laissez vide pour une répétition infinie.</p>
                 </div>
+                <Separator />
             </div>
-
-            <Separator />
 
             <!-- Section Choix pour Select -->
             <div v-if="['select_one', 'select_multiple', 'rank'].includes(question.type)" class="space-y-4">
@@ -188,7 +186,7 @@ const updateChoice = (index: number, field: 'name' | 'label', value: string) => 
                                     />
                                     <Input 
                                         :model-value="(element as any).filter_value"
-                                        @update:model-value="v => updateChoice(index, 'filter_value' as any, v as string)"
+                                        @update:model-value="v => updateChoice(index, 'filter_value', v as string)"
                                         class="h-5 text-[10px] font-mono text-primary/70 border-none bg-transparent px-0 focus-visible:ring-0 text-right" 
                                         placeholder="attribut_filtre" 
                                     />
@@ -218,6 +216,7 @@ const updateChoice = (index: number, field: 'name' | 'label', value: string) => 
                 <Separator />
             </div>
 
+            <!-- Validation & Visibilité -->
             <div class="space-y-4">
                 <div class="flex items-center space-x-2">
                     <Checkbox 
@@ -225,23 +224,59 @@ const updateChoice = (index: number, field: 'name' | 'label', value: string) => 
                         :checked="question.required" 
                         @update:checked="v => update('required', v)"
                     />
-                    <Label for="q-required" class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                        Réponse obligatoire
-                    </Label>
+                    <Label for="q-required" class="text-sm font-medium">Réponse obligatoire</Label>
                 </div>
             </div>
 
             <Separator />
 
+            <!-- Visibilité Conditionnelle -->
             <div class="space-y-4">
-                <h3 class="text-sm font-medium">Logique</h3>
+                <div class="flex items-center justify-between">
+                    <h3 class="text-sm font-medium">Visibilité Conditionnelle</h3>
+                    <div class="p-1 rounded bg-muted">
+                        <Info class="w-3 h-3 text-muted-foreground" />
+                    </div>
+                </div>
+                
+                <p class="text-[10px] text-muted-foreground">Afficher cette question seulement si :</p>
+
+                <LogicBuilder 
+                    :model-value="question.properties.logic_rules || []"
+                    @update:model-value="v => update('properties', { ...question.properties, logic_rules: v })"
+                    @update:xpath="v => update('relevant', v)"
+                />
+
+                <div v-if="question.relevant" class="p-2 bg-muted/50 rounded text-[9px] font-mono break-all text-muted-foreground border">
+                    XPath : {{ question.relevant }}
+                </div>
+            </div>
+
+            <Separator />
+
+            <!-- Contraintes / Validation -->
+            <div class="space-y-4">
+                <h3 class="text-sm font-medium">Validation (Contrainte)</h3>
+                
                 <div class="space-y-2">
-                    <Label for="q-relevant">Condition d'affichage (Relevant)</Label>
+                    <Label for="q-constraint" class="text-[11px]">Règle de validation (XPath)</Label>
                     <Input 
-                        id="q-relevant" 
-                        :model-value="question.relevant" 
-                        @update:model-value="v => update('relevant', v)"
-                        placeholder="ex: ${age} > 18"
+                        id="q-constraint" 
+                        :model-value="question.constraint" 
+                        @update:model-value="v => update('constraint', v)"
+                        placeholder="ex: . > 0"
+                        class="h-8 text-xs"
+                    />
+                </div>
+                
+                <div class="space-y-2">
+                    <Label for="q-constraint-msg" class="text-[11px]">Message d'erreur</Label>
+                    <Input 
+                        id="q-constraint-msg" 
+                        :model-value="question.constraint_message" 
+                        @update:model-value="v => update('constraint_message', v)"
+                        placeholder="La valeur est invalide."
+                        class="h-8 text-xs"
                     />
                 </div>
             </div>
