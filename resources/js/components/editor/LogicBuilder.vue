@@ -6,13 +6,15 @@ import { Input } from '@/components/ui/input';
 import { computed, watch, ref } from 'vue';
 
 const props = defineProps<{
-    modelValue: any[]; // Liste des règles
+    modelValue: any[];
+    logicOperator?: string;
 }>();
 
-const emit = defineEmits(['update:modelValue', 'update:xpath']);
+const emit = defineEmits(['update:modelValue', 'update:xpath', 'update:logicOperator']);
 const store = useFormEditorStore();
 
 const rules = ref<any[]>(props.modelValue || []);
+const currentOperator = ref(props.logicOperator || 'and');
 
 const operators = [
     { label: 'est égal à', value: '=' },
@@ -36,30 +38,26 @@ const removeRule = (index: number) => {
     rules.value.splice(index, 1);
 };
 
-// Générer l'XPath à partir des règles
-const generateXPath = (rulesList: any[]) => {
+const generateXPath = (rulesList: any[], operator: string) => {
     if (rulesList.length === 0) return '';
     
-    return rulesList.map(rule => {
+    const parts = rulesList.map(rule => {
         if (!rule.field) return '';
-        
         const fieldRef = `$\{${rule.field}\}`;
-        
-        if (rule.operator === 'selected') {
-            return `selected(${fieldRef}, '${rule.value}')`;
-        }
-        
-        // Si la valeur est numérique, pas de quotes, sinon quotes
+        if (rule.operator === 'selected') return `selected(${fieldRef}, '${rule.value}')`;
         const isNumeric = !isNaN(rule.value) && rule.value !== '';
         const val = isNumeric ? rule.value : `'${rule.value}'`;
-        
         return `${fieldRef} ${rule.operator} ${val}`;
-    }).filter(r => r !== '').join(' and ');
+    }).filter(r => r !== '');
+
+    if (parts.length === 0) return '';
+    return parts.join(` ${operator} `);
 };
 
-watch(rules, (newRules) => {
-    emit('update:modelValue', newRules);
-    emit('update:xpath', generateXPath(newRules));
+watch([rules, currentOperator], () => {
+    emit('update:modelValue', rules.value);
+    emit('update:logicOperator', currentOperator.value);
+    emit('update:xpath', generateXPath(rules.value, currentOperator.value));
 }, { deep: true });
 
 // Filtrer les questions pour ne pas proposer la question actuelle (évite les références circulaires)
@@ -70,7 +68,23 @@ const availableFields = computed(() => {
 
 <template>
     <div class="space-y-3">
-        <div v-for="(rule, index) in rules" :key="index" class="p-3 border rounded-md bg-muted/20 space-y-2 relative group">
+        <!-- Sélecteur ET / OU -->
+        <div v-if="rules.length > 1" class="flex p-1 bg-muted rounded-lg w-fit">
+            <button 
+                @click="currentOperator = 'and'"
+                :class="['px-3 py-1 text-[9px] font-bold rounded-md transition-all', currentOperator === 'and' ? 'bg-background shadow-sm text-primary' : 'text-muted-foreground']"
+            >
+                TOUTES (ET)
+            </button>
+            <button 
+                @click="currentOperator = 'or'"
+                :class="['px-3 py-1 text-[9px] font-bold rounded-md transition-all', currentOperator === 'or' ? 'bg-background shadow-sm text-primary' : 'text-muted-foreground']"
+            >
+                UNE SEULE (OU)
+            </button>
+        </div>
+
+        <div v-for="(rule, index) in rules" :key="index" class="p-3 border rounded-md bg-muted/20 space-y-2 relative group animate-in zoom-in-95 duration-200">
             <Button 
                 variant="ghost" 
                 size="icon" 

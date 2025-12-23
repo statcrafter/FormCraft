@@ -1,18 +1,20 @@
 <script setup lang="ts">
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, Save, Download } from 'lucide-vue-next';
-import { onMounted } from 'vue';
+import { ChevronLeft, Save, Download, Eye } from 'lucide-vue-next';
+import { onMounted, ref } from 'vue';
 import { useFormEditorStore } from '@/stores/formEditor';
 import Toolbox from '@/components/editor/Toolbox.vue';
 import Canvas from '@/components/editor/Canvas.vue';
 import PropertiesEditor from '@/components/editor/PropertiesEditor.vue';
+import PreviewModal from '@/components/editor/PreviewModal.vue';
 
 const props = defineProps<{
     form: any;
 }>();
 
 const store = useFormEditorStore();
+const showPreview = ref(false);
 
 onMounted(() => {
     store.formTitle = props.form.title;
@@ -68,6 +70,11 @@ const downloadXls = () => {
             </div>
 
             <div class="flex items-center gap-2">
+                <Button variant="outline" size="sm" @click="showPreview = true">
+                    <Eye class="w-4 h-4 mr-2" />
+                    Prévisualiser
+                </Button>
+                <div class="h-4 w-px bg-border mx-1"></div>
                 <Button variant="outline" size="sm" @click="downloadXls">
                     <Download class="w-4 h-4 mr-2" />
                     Exporter XLSForm
@@ -89,6 +96,9 @@ const downloadXls = () => {
             <Canvas />
             <PropertiesEditor :form="form" />
         </div>
+
+        <!-- Modals -->
+        <PreviewModal v-model:open="showPreview" />
     </div>
 </template>
 
